@@ -15,15 +15,15 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 
-from DKG import settings, data
-from DKG.eval import evaluate
-from DKG.model import DynamicGraphModel, EmbeddingUpdater, Combiner, EdgeModel, InterEventTimeModel, MultiAspectEmbedding
-from DKG.model.time_interval_transform import TimeIntervalTransform
+from dkg import settings, data
+from dkg.eval import evaluate
+from dkg.model import DynamicGraphModel, EmbeddingUpdater, Combiner, EdgeModel, InterEventTimeModel, MultiAspectEmbedding
+from dkg.model.time_interval_transform import TimeIntervalTransform
 
-import DKG.utils as utils
-from DKG.utils.log_utils import add_logger_file_handler, get_log_root_path, logger
-from DKG.utils.model_utils import get_embedding
-from DKG.utils.train_utils import setup_cuda, EarlyStopping, nullable_string, activation_string
+import dkg.utils as utils
+from dkg.utils.log_utils import add_logger_file_handler, get_log_root_path, logger
+from dkg.utils.model_utils import get_embedding
+from dkg.utils.train_utils import setup_cuda, EarlyStopping, nullable_string, activation_string
 
 
 def main(args):

@@ -1,0 +1,63 @@
+[project]
+name = "DKG"
+description = "Dynamic Knowledge Graph with Large Language Models for Global Finance (https://dx.doi.org/10.2139/ssrn.4608445)"
+authors = [
+  {name = "Victor Xiaohui Li", email = "xl2814@columbia.edu"},
+]
+
+readme = "README.md"
+requires-python = ">=3.11"
+version = "0.1.0"
+
+dependencies = [
+  "numpy (>=2.2.3,<3.0.0)",
+  "pandas (>=2.2.3,<3.0.0)",
+  "tqdm (>=4.67.1,<5.0.0)",
+  "dgl (>=2.4.0,<3.0.0)",
+  "torch (<=2.4.0)",
+  "torchmetrics (>=1.0.3,<2.0.0)",
+  "torchvision (<2.6.0)",
+  "torch-scatter (>=2.1.2,<3.0.0)",
+]
+
+packages = [
+  {include = "dkg", from = "."},
+]
+
+# [project.urls]
+# homepage = "https://python-poetry.org/"
+# repository = "https://github.com/python-poetry/poetry"
+# documentation = "https://python-poetry.org/docs/"
+# "Bug Tracker" = "https://github.com/python-poetry/poetry/issues"
+
+# [project.scripts]
+# my_package_cli = 'my_package.console:run'
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[[tool.poetry.source]]
+name = "pytorch-gpu-src"
+priority = "explicit"
+url = "https://download.pytorch.org/whl/cu118"
+
+[[tool.poetry.source]]
+name = "dgl-torch-cuda118"
+priority = "explicit"
+url = "https://data.dgl.ai/wheels/torch-2.4/cu118/repo.html"
+
+[[tool.poetry.source]]
+name = "torch-extensions"
+priority = "explicit"
+url = "https://data.pyg.org/whl/torch-2.4.0+cu118.html"
+
+[tool.poetry.dependencies]
+dgl = {source = "dgl-torch-cuda118"}
+torch = {source = "pytorch-gpu-src"}
+torch-scatter = {source = "torch-extensions"}
+torchmetrics = {source = "pytorch-gpu-src"}
+torchvision = {source = "pytorch-gpu-src"}

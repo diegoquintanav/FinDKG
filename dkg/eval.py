@@ -7,10 +7,10 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 
-from DKG import settings   # Graph Configuraton
-from DKG.model import DynamicGraphModel, StaticGraphModel, EventTimeHelper
-from DKG.utils.eval_utils import RankingMetric, RegressionMetric
-from DKG.utils.log_utils import logger, get_log_root_path
+from dkg import settings   # Graph Configuraton
+from dkg.model import DynamicGraphModel, StaticGraphModel, EventTimeHelper
+from dkg.utils.eval_utils import RankingMetric, RegressionMetric
+from dkg.utils.log_utils import logger, get_log_root_path
 
 
 def evaluate(model: DynamicGraphModel, data_loader, entire_G, static_entity_emb,
@@ -296,19 +296,19 @@ def evaluate_static(model, data_loader, static_entity_emb, args, phase, full_lin
     model.eval()
     eval_ranks_dict = None
     eval_dict = {}
-    
+
     with torch.no_grad():
         if full_link_pred_eval:
             batch_tqdm = tqdm(data_loader)
             for i, (prior_G, batch_G, cumul_G, batch_times) in enumerate(batch_tqdm):
                 batch_tqdm.set_description(f"[{phase} / batch-{i}]")
-                
+
                 if phase in ["Test", "Validation"]:
                     # Replace with your actual function for link prediction evaluation
                     batch_eval_ranks_dict = eval_static_link_prediction(model, cumul_G, static_entity_emb, batch_times, args)
-                    
+
                     batch_eval_edge_ranks = next(iter(batch_eval_ranks_dict.values()))
-                    
+
                     batch_eval_dict = {
                         'MRR': RankingMetric.mean_reciprocal_rank(batch_eval_edge_ranks),
                         'REC1': RankingMetric.recall(batch_eval_edge_ranks, 1),
@@ -317,13 +317,13 @@ def evaluate_static(model, data_loader, static_entity_emb, args, phase, full_lin
                         'REC100': RankingMetric.recall(batch_eval_edge_ranks, 100),
                         'edge_ranks': batch_eval_edge_ranks,
                     }
-                    
+
                     if eval_ranks_dict is None:
                         eval_ranks_dict = batch_eval_ranks_dict
                     else:
                         for k in eval_ranks_dict.keys():
                             eval_ranks_dict[k].extend(batch_eval_ranks_dict[k])
-                            
+
             eval_ranks = eval_ranks_dict[loss_weights]
             eval_dict['MRR'] = RankingMetric.mean_reciprocal_rank(eval_ranks)
             for k in [1, 3, 10, 100]:
@@ -331,12 +331,12 @@ def evaluate_static(model, data_loader, static_entity_emb, args, phase, full_lin
 
             # Log the results
             logger.info(f"{phase} Metrics: MRR={eval_dict['MRR']:.6f}, Rec@1={eval_dict['REC1']:.6f}, Rec@3={eval_dict['REC3']:.6f}, Rec@10={eval_dict['REC10']:.6f}, Rec@100={eval_dict['REC100']:.6f}")
-            
+
             if phase == "Test":
                 log_root_path = get_log_root_path(args.graph, args.log_dir)
                 with open(os.path.join(log_root_path, f"{args.result_file_prefix}{args.graph}_eval_{args.eval}_static_link_pred_test_result.txt"), 'w') as f:
                     f.write(f"{args.seed},{eval_dict['REC1']:.6f},{eval_dict['REC3']:.6f},{eval_dict['REC10']:.6f},{eval_dict['MRR']:.6f}\n")
-                
+
     return eval_dict, eval_ranks_dict
 
 def eval_static_link_prediction(model, entire_G, static_entity_emb, eval_times, args):
@@ -356,7 +356,7 @@ def eval_static_link_prediction(model, entire_G, static_entity_emb, eval_times, 
     with torch.no_grad():
         # Ensure static entity embeddings are on CPU device
         assert static_entity_emb.device == torch.device('cpu')
-        
+
         entire_G = entire_G.to(args.device)
 
         # Extract evaluation time range

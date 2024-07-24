@@ -4,7 +4,7 @@ import torch
 import torch.distributions as D
 import torch.nn as nn
 
-from DKG.model.time_interval_transform import TimeIntervalTransform
+from dkg.model.time_interval_transform import TimeIntervalTransform
 from torch.distributions import Normal, MixtureSameFamily, TransformedDistribution
 
 
@@ -73,7 +73,7 @@ class LogNormMixTPP(nn.Module):
 
     def get_inter_event_time(self, batch_G, node_latest_event_time, batch_eid=None):
         global_inter_event_time = True if self.mode == 'min_inter_event_times' else False
-        from DKG.model.embedding import EventTimeHelper
+        from dkg.model.embedding import EventTimeHelper
 
         recipient_inter_event_time = EventTimeHelper.get_sparse_inter_event_times(  # shape: (# edges in batch_G,)
             batch_G, node_latest_event_time[..., 0], _global=global_inter_event_time
@@ -139,7 +139,7 @@ class LogNormMixTPP(nn.Module):
         expected_inter_event_time = inter_event_time_dist.mean.view(-1)  # shape=(# edges in batch_G,)
         expected_inter_event_time = self.time_interval_transform.reverse_transform(expected_inter_event_time)
 
-        from DKG.model.embedding import EventTimeHelper
+        from dkg.model.embedding import EventTimeHelper
         global_inter_event_time = True if self.mode == 'min_inter_event_times' else False
         latest_event_time = EventTimeHelper.get_sparse_latest_event_times(  # shape=(# edges in batch_G,)
             batch_G, node_latest_event_time[..., 0], _global=global_inter_event_time
