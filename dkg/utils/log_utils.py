@@ -3,7 +3,7 @@ import logging
 import os
 from datetime import datetime
 
-from DKG import settings
+from dkg import settings
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

@@ -10,10 +10,10 @@ import torch
 import torch.nn as nn
 from torch_scatter import scatter_mean
 
-from DKG import settings
-from DKG.model.gnn import RGCN, KGTransformer
-from DKG.model.tpp import LogNormMixTPP
-from DKG.utils.model_utils import node_norm_to_edge_norm, get_embedding
+from dkg import settings
+from dkg.model.gnn import RGCN, KGTransformer
+from dkg.model.tpp import LogNormMixTPP
+from dkg.utils.model_utils import node_norm_to_edge_norm, get_embedding
 
 MultiAspectEmbedding = namedtuple('MultiAspectEmbedding', ['structural', 'temporal'], defaults=[None, None])
 
@@ -54,7 +54,7 @@ class EmbeddingUpdater(nn.Module):
         temporal_relation_rnn (RelationRNN): The relation RNN for temporal embeddings.
     """
     def __init__(self, num_nodes, in_dim, structural_hid_dim, temporal_hid_dim,
-                 node_latest_event_time, num_rels, rel_embed_dim, 
+                 node_latest_event_time, num_rels, rel_embed_dim,
                  graph_structural_conv='RGCN+RNN', graph_temporal_conv='RGCN+RNN',
                  num_gconv_layers=2, num_rnn_layers=1,
                  num_node_types=1, num_heads=8,
@@ -73,7 +73,7 @@ class EmbeddingUpdater(nn.Module):
             self.graph_structural_conv = \
                 GraphStructuralRNNConv(gconv, num_gconv_layers, rnn, num_rnn_layers, in_dim, structural_hid_dim,
                                        num_nodes, num_rels, rel_embed_dim,
-                                       num_node_types=num_node_types,     # Meta-relation node type 
+                                       num_node_types=num_node_types,     # Meta-relation node type
                                        num_heads=num_heads,     # Attention head
                                        dropout=dropout, activation=activation, graph_name=graph_name)
         elif graph_structural_conv is None:
@@ -87,7 +87,7 @@ class EmbeddingUpdater(nn.Module):
             self.graph_temporal_conv = \
                 GraphTemporalRNNConv(gconv, num_gconv_layers, rnn, num_rnn_layers, in_dim, temporal_hid_dim,
                                      node_latest_event_time, time_interval_transform, num_nodes, num_rels,
-                                     num_node_types=num_node_types,   # Meta-relation node type 
+                                     num_node_types=num_node_types,   # Meta-relation node type
                                      num_heads=num_heads,    # Attention head
                                      dropout=dropout, activation=activation, graph_name=graph_name)
         elif graph_temporal_conv is None:
@@ -223,12 +223,12 @@ class GraphStructuralRNNConv(nn.Module):
         if isinstance(self.graph_conv, RGCN):
             edge_norm = node_norm_to_edge_norm(batch_G)
             conv_structural_static_emb = self.graph_conv(batch_G, batch_structural_static_entity_emb, batch_G.edata['rel_type'].long(), edge_norm)
-        
+
         # KGTransformer
         elif isinstance(self.graph_conv, KGTransformer):
             #edge_norm = node_norm_to_edge_norm(batch_G)
             conv_structural_static_emb = self.graph_conv(batch_G, batch_structural_static_entity_emb,
-                                                         batch_G.ndata['node_type'].long(),   # num of node  
+                                                         batch_G.ndata['node_type'].long(),   # num of node
                                                          batch_G.edata['rel_type'].long()   # num of relationship
                                                          )
         else:
@@ -263,7 +263,7 @@ class GraphTemporalRNNConv(nn.Module):
         super().__init__()
 
         self.num_nodes = num_nodes  # num nodes in the entire G
-        self.num_node_types = num_node_types 
+        self.num_node_types = num_node_types
         self.num_heads = num_heads
         self.num_rels = num_rels
 
@@ -317,7 +317,7 @@ class GraphTemporalRNNConv(nn.Module):
         """Temporal RNN input"""
         batch_temporal_static_entity_emb = static_entity_emb.temporal[batch_G.ndata[dgl.NID].long()].to(device)
         edge_norm = (1 / self.time_interval_transform(batch_G_sparse_inter_event_times).clamp(min=1e-10)).clamp(max=10.0)
-        
+
         # Encoding dimension
         #  !norm is time decay factor
         if isinstance(self.graph_conv, RGCN):
@@ -325,7 +325,7 @@ class GraphTemporalRNNConv(nn.Module):
                                                             batch_G.edata['rel_type'].long(), edge_norm)
         elif isinstance(self.graph_conv, KGTransformer):
             batch_G_conv_temporal_static_emb = self.graph_conv(batch_G, batch_temporal_static_entity_emb,
-                                                               batch_G.ndata['node_type'].long(),   # num ofnode  
+                                                               batch_G.ndata['node_type'].long(),   # num ofnode
                                                                batch_G.edata['rel_type'].long(),   # num of relationship
                                                                norm=None
                                                             )
@@ -344,9 +344,9 @@ class GraphTemporalRNNConv(nn.Module):
             rev_batch_G_conv_temporal_static_emb = self.graph_conv(rev_batch_G, rev_batch_temporal_static_entity_emb, batch_G.edata['rel_type'].long(),
                                                                    rev_edge_norm)
         elif isinstance(self.graph_conv, KGTransformer):
-            rev_batch_G_conv_temporal_static_emb = self.graph_conv(rev_batch_G, rev_batch_temporal_static_entity_emb, 
+            rev_batch_G_conv_temporal_static_emb = self.graph_conv(rev_batch_G, rev_batch_temporal_static_entity_emb,
                                                                    rev_batch_G.ndata['node_type'].long(),   # num ofnode
-                                                                   rev_batch_G.edata['rel_type'].long())   # num of relationship   
+                                                                   rev_batch_G.edata['rel_type'].long())   # num of relationship
         else:
             raise ValueError(f" <-- Invalid graph conv")
 

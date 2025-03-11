@@ -1,6 +1,6 @@
 # Core Model Architecture for Dynamic Knowledge Graph
 # --------------------------------------------------
-# 
+#
 #
 from collections import namedtuple
 
@@ -11,13 +11,13 @@ import torch
 import torch.nn as nn
 from torch_scatter import scatter_mean
 
-from DKG import settings
-from DKG.model.embedding import EmbeddingUpdater, EventTimeHelper, StaticEmbeddingUpdater
-from DKG.model.time_interval_transform import TimeIntervalTransform
-from DKG.model.gnn import RGCN
-from DKG.model.tpp import LogNormMixTPP
-from DKG.utils.train_utils import nullable_string, activation_string
-from DKG.utils.model_utils import node_norm_to_edge_norm, get_embedding
+from dkg import settings
+from dkg.model.embedding import EmbeddingUpdater, EventTimeHelper, StaticEmbeddingUpdater
+from dkg.model.time_interval_transform import TimeIntervalTransform
+from dkg.model.gnn import RGCN
+from dkg.model.tpp import LogNormMixTPP
+from dkg.utils.train_utils import nullable_string, activation_string
+from dkg.utils.model_utils import node_norm_to_edge_norm, get_embedding
 
 MultiAspectEmbedding = namedtuple('MultiAspectEmbedding', ['structural', 'temporal'], defaults=[None, None])
 
@@ -37,11 +37,11 @@ DKG_CONFIG_DICT = {
     'early_stop_criterion': 'MRR',  # evaluation criterion
     'eval': 'edge',
     'optimize': 'edge',   # 'edge' or 'both'
-    'clean_up_run_best_checkpoint': False, 
+    'clean_up_run_best_checkpoint': False,
     'eval_every': 1,   # perform evaluation every k epoch(s)
-    'eval_from': 0,  
+    'eval_from': 0,
     'full_link_pred_validation': True,
-    'full_link_pred_test': True, 
+    'full_link_pred_test': True,
     'time_pred_eval':False,
     'static_entity_embed_dim':200,
     'structural_dynamic_entity_embed_dim':200,
@@ -54,12 +54,12 @@ DKG_CONFIG_DICT = {
     'num_attn_heads':8,
     'rnn_truncate_every':100,
     'combiner_gconv':None, #  graph conv module for combiner
-    'combiner_activation':activation_string('tanh'),  
+    'combiner_activation':activation_string('tanh'),
     'static_dynamic_combine_mode':'concat',
     'dropout':0.2,
     'embedding_updater_structural_gconv':'RGCN+RNN',
     'embedding_updater_temporal_gconv':'RGCN+RNN',
-    'embedding_updater_activation':activation_string('tanh'), 
+    'embedding_updater_activation':activation_string('tanh'),
     'inter_event_dtype': torch.float32,
     'gpu': -1  # -1 indicates CPU
 }
@@ -177,7 +177,7 @@ class DynamicKGEngine:
         self.inter_event_time_model = InterEventTimeModel(dynamic_entity_embed_dim=self.args.temporal_dynamic_entity_embed_dim,
                                                           static_entity_embed_dim=self.args.static_entity_embed_dim,
                                                           num_rels=self.num_relations,
-                                                          rel_embed_dim=self.args.rel_embed_dim, 
+                                                          rel_embed_dim=self.args.rel_embed_dim,
                                                           num_mix_components=self.args.num_mix_components,
                                                           time_interval_transform=self.time_interval_transform,
                                                           inter_event_time_mode=self.args.inter_event_time_mode,
@@ -195,7 +195,7 @@ def predict_link(model, cumul_G, tgt_heads, tgt_tails, relation_ids,
                  combined_emb, static_entity_emb, dynamic_entity_emb, dynamic_relation_emb, output_type='prob'):
     """
     Predicts the link probability for given heads, tails, and relation_ids.
-    
+
     Args:
     - model: The trained model.
     - cumul_G: The cumulative graph.
@@ -207,7 +207,7 @@ def predict_link(model, cumul_G, tgt_heads, tgt_tails, relation_ids,
     - dynamic_relation_emb: Dynamic embeddings for relations.
     - eval_eid: Optional edge IDs for evaluation.
     - output_type: output prediction score of entity
-    
+
     Returns:
     - edges_target_entity_log_prob: The log probability of predicted edges.
     """
@@ -219,23 +219,23 @@ def predict_link(model, cumul_G, tgt_heads, tgt_tails, relation_ids,
     cumul_G.add_edges(heads_local, tails_local)
     # store the relation_ids as edge data
     cumul_G.edata['rel_type'][-len(relation_ids):] = torch.tensor(relation_ids)
-    
+
     edge_position_ids = np.arange(len(cumul_G.edata['rel_type']))[-len(tgt_heads):]
     pred_ids = torch.tensor(edge_position_ids, dtype=torch.int32)
-    
+
     # Compute edge predictions
     _, edges_head_pred, edges_rel_pred, edges_tail_pred = model.edge_model(
-        cumul_G, 
-        combined_emb, 
+        cumul_G,
+        combined_emb,
         static_entity_emb,
-        dynamic_entity_emb, 
+        dynamic_entity_emb,
         dynamic_relation_emb,
         eid=pred_ids, return_pred=True
     )
     if output_type=='prob':
         # tail entity probability
         pred_entity_prob = torch.softmax(edges_tail_pred, dim=1).cpu().detach().numpy()
-    
+
     # tail entity likelihood
     return edges_tail_pred.cpu().detach().numpy()
 
@@ -367,7 +367,7 @@ class GraphReadout(nn.Module):
             else:
                 raise ValueError(f"Invalid readout: {self.readout_op}")
 
-# Dynamic Edge Model 
+# Dynamic Edge Model
 class EdgeModel(nn.Module):
     def __init__(self, num_entities, num_rels, rel_embed_dim, combiner, dropout=0.0, graph_readout_op='max'):
         super().__init__()
@@ -463,7 +463,7 @@ class EdgeModel(nn.Module):
             else:
                 return log_prob
 
-# Static Edge Model 
+# Static Edge Model
 
 class StaticEdgeModel(nn.Module):
     def __init__(self, num_entities, num_rels, rel_embed_dim, combiner, dropout=0.0):

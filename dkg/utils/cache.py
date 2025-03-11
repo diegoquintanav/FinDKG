@@ -3,7 +3,7 @@ import logging
 import os
 import dill as pickle
 
-from DKG import settings
+from dkg import settings
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] [%(module)s.%(funcName)s] %(message)s')
 _logger = logging.getLogger(__name__)

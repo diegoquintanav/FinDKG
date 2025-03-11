@@ -2,7 +2,7 @@
 # --------------------------------------
 #
 # Train cml:
-#   python train_DKG_run.py 
+#   python train_DKG_run.py
 #
 
 import os
@@ -36,23 +36,23 @@ sys.path.append(parent_parent_path)
 import torch
 from torch.utils.data import DataLoader
 
-import DKG
-print(DKG.__version__)
+import dkg
+print(dkg.__version__)
 
-from DKG.utils.log_utils import add_logger_file_handler, get_log_root_path, logger
-from DKG.utils.model_utils import get_embedding
-from DKG.utils.train_utils import setup_cuda, EarlyStopping, nullable_string, activation_string
+from dkg.utils.log_utils import add_logger_file_handler, get_log_root_path, logger
+from dkg.utils.model_utils import get_embedding
+from dkg.utils.train_utils import setup_cuda, EarlyStopping, nullable_string, activation_string
 
-from DKG.model import DynamicGraphModel, DKG_DEFAULT_CONFIG, EmbeddingUpdater, Combiner, EdgeModel, InterEventTimeModel, MultiAspectEmbedding
-from DKG.model.time_interval_transform import TimeIntervalTransform
+from dkg.model import DynamicGraphModel, DKG_DEFAULT_CONFIG, EmbeddingUpdater, Combiner, EdgeModel, InterEventTimeModel, MultiAspectEmbedding
+from dkg.model.time_interval_transform import TimeIntervalTransform
 
-from DKG.train import forward_graphs,  pack_checkpoint, unpack_checkpoint, compute_loss
-from DKG.eval import evaluate
+from dkg.train import forward_graphs,  pack_checkpoint, unpack_checkpoint, compute_loss
+from dkg.eval import evaluate
 
 INTER_EVENT_TIME_DTYPE = torch.float32
 
 
-############################### Config ############################### 
+############################### Config ###############################
 graph_mode = "FinDKG"   # specify the dataset: "FinDKG" "ICEWS18"  #"ICEWS14"  #"ICEWS_500"  #"GDELT"  #"WIKI"  #"YAGO"
 
 model_ver = "KGTransformer"   # Mode name: "GraphTransformer"
@@ -66,8 +66,8 @@ flag_eval = True     # Evaluate the model
 
 
 ############################### Load Graph Data ###############################
-G = DKG.data.load_temporal_knowledge_graph(graph_mode, data_root=data_root_path)
-collate_fn = partial(DKG.utils.collate_fn, G=G)
+G = dkg.data.load_temporal_knowledge_graph(graph_mode, data_root=data_root_path)
+collate_fn = partial(dkg.utils.collate_fn, G=G)
 
 train_data_loader = DataLoader(G.train_times, shuffle=False, collate_fn=collate_fn)
 val_data_loader = DataLoader(G.val_times, shuffle=False, collate_fn=collate_fn)
@@ -77,17 +77,17 @@ test_data_loader = DataLoader(G.test_times, shuffle=False, collate_fn=collate_fn
 ############################### Model Config ###############################
 args = deepcopy(DKG_DEFAULT_CONFIG)
 
-args.seed = random_seed  # Random Seed 
+args.seed = random_seed  # Random Seed
 args.cuda = args.gpu >= 0 and torch.cuda.is_available()
-args.device = torch.device("cuda:{}".format(args.gpu) if args.cuda else "cpu")  
+args.device = torch.device("cuda:{}".format(args.gpu) if args.cuda else "cpu")
 args.graph = graph_mode
-args.version = model_ver #'GTransformer' 
+args.version = model_ver #'GTransformer'
 args.optimize = 'both'
 
 dim_num = 200   # default dim set up to 200
-args.static_entity_embed_dim = dim_num 
-args.structural_dynamic_entity_embed_dim = dim_num 
-args.temporal_dynamic_entity_embed_dim = dim_num 
+args.static_entity_embed_dim = dim_num
+args.structural_dynamic_entity_embed_dim = dim_num
+args.temporal_dynamic_entity_embed_dim = dim_num
 
 args.num_gconv_layers = 2   # layer of the KGTransformer, default set up 2
 
@@ -101,19 +101,19 @@ if args.device=='cuda':
     torch.cuda.manual_seed_all(args.seed)
 
 num_relations = G.num_relations
-    
+
 # Training dir
 log_root_path = get_log_root_path(args.graph, args.log_dir)
 print(log_root_path)
 overall_best_checkpoint_prefix = f"{args.graph}_{args.version}_overall_best_checkpoint"
 run_best_checkpoint_prefix = f"{args.graph}_{args.version}_run_best_checkpoint"
-    
+
 with open(os.path.join(log_root_path, f"{args.graph}_args_{args.version}.txt"), 'w') as f:
     f.write(pprint.pformat(args.__dict__))
 
 add_logger_file_handler(args.graph, args.version , '.',
                         log_time=None, fname_prefix="")
-    
+
 logger.info(f"  --> Set up random seed [ {args.seed} ]")
 
 
@@ -197,7 +197,7 @@ stopper = EarlyStopping(args.graph, args.patience,
                         run_best_checkpoint_prefix=run_best_checkpoint_prefix,
                         overall_best_checkpoint_prefix=overall_best_checkpoint_prefix,
                         eval=args.eval)
-    
+
 params = list(model.parameters()) + [
         static_entity_embeds.structural, static_entity_embeds.temporal,
         init_dynamic_entity_embeds.structural, init_dynamic_entity_embeds.temporal,
@@ -219,7 +219,7 @@ if flag_train:
         evaluate(model, val_data_loader, G, static_entity_embeds, dynamic_entity_emb, dynamic_relation_emb,
                 num_relations, args, "Validation", args.full_link_pred_validation, args.time_pred_eval, 0)
 
-    # Save the model locally 
+    # Save the model locally
     node_latest_event_time_post_valid = deepcopy(model.node_latest_event_time)
     pack_args = (model, edge_optimizer, time_optimizer, static_entity_embeds,
                             init_dynamic_entity_embeds, val_dynamic_entity_emb,

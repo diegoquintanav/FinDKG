@@ -9,7 +9,7 @@ import pandas as pd
 import torch
 
 # Graph Configuraton
-from DKG import settings
+from dkg import settings
 
 
 def load_temporal_knowledge_graph(graph_name, idtype=settings.DGL_GRAPH_ID_TYPE, data_root=settings.DATA_ROOT):

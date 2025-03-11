@@ -3,8 +3,8 @@ import os
 import torch
 from torch import nn as nn
 
-from DKG import settings
-from DKG.utils.log_utils import logger
+from dkg import settings
+from dkg.utils.log_utils import logger
 
 
 class EarlyStopping:
