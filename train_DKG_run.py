@@ -59,7 +59,7 @@ model_ver = "KGTransformer"   # Mode name: "GraphTransformer"
 model_type ='KGT+RNN'  # 'KGT+RNN' for GraphTransformer | 'RGCN+RNN' for GraphRNN
 epoch_times = 150
 random_seed = 41
-data_root_path = './data'   # output data path
+data_root_path = './FinDKG_dataset'   # output data path
 
 flag_train = True    # Traing the model
 flag_eval = True     # Evaluate the model
@@ -104,6 +104,10 @@ num_relations = G.num_relations
 
 # Training dir
 log_root_path = get_log_root_path(args.graph, args.log_dir)
+
+# mkdir if not exist
+os.makedirs(log_root_path, exist_ok=True)
+
 print(log_root_path)
 overall_best_checkpoint_prefix = f"{args.graph}_{args.version}_overall_best_checkpoint"
 run_best_checkpoint_prefix = f"{args.graph}_{args.version}_run_best_checkpoint"
