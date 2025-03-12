@@ -1,0 +1,20 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+        args: ["--unsafe"]
+      - id: trailing-whitespace
+      - id: detect-private-key
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    # Ruff version.
+    rev: "v0.9.10"
+    hooks:
+      - id: ruff # Lint Ruff files.
+      - id: ruff-format # Format Ruff files.
+fail_fast: false
+files: ".*"
+exclude: "desktop.ini" # Windows
+default_language_version:
+  python: python3.11

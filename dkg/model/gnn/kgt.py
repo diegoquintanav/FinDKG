@@ -1,5 +1,5 @@
 """
-This module implements the Knowledge Graph Transformer and Graph Transformer classes for use in dynamic knowledge graph embedding. 
+This module implements the Knowledge Graph Transformer and Graph Transformer classes for use in dynamic knowledge graph embedding.
 
 The Knowledge Graph Transformer is a multi-layer transformer that takes in a graph, node embeddings, node types, and edge types, and outputs updated node embeddings. The Graph Transformer is a single-layer transformer that is used as a building block for the Knowledge Graph Transformer.
 
@@ -22,19 +22,21 @@ import math
 
 
 class KGTransformer(nn.Module):
-    """ Knowledge Graph Transformer
-    """
-    def __init__(self,
-                 in_dim,
-                 hid_dim,
-                 num_heads,
-                 out_dim,
-                 n_layers,
-                 num_nodes,
-                 num_rels,
-                 dropout=0.2,
-                 layer_norm=True,
-                 low_mem=False):
+    """Knowledge Graph Transformer"""
+
+    def __init__(
+        self,
+        in_dim,
+        hid_dim,
+        num_heads,
+        out_dim,
+        n_layers,
+        num_nodes,
+        num_rels,
+        dropout=0.2,
+        layer_norm=True,
+        low_mem=False,
+    ):
         super().__init__()
         self.in_dim = in_dim
         self.num_heads = num_heads  # number of attention heads
@@ -53,43 +55,51 @@ class KGTransformer(nn.Module):
         assert self.n_layers >= 1, self.n_layers
         self.layers = nn.ModuleList()
         if self.n_layers == 1:
-            self.layers.append(GraphTransformer(
-                self.in_dim, self.hid_dim, self.num_heads,
-                num_ntypes = self.num_nodes,
-                num_etypes = self.num_rels,
-                dropout=self.dropout,
-                use_norm=self.layer_norm#, low_mem=low_mem,
-            ))
+            self.layers.append(
+                GraphTransformer(
+                    self.in_dim,
+                    self.hid_dim,
+                    self.num_heads,
+                    num_ntypes=self.num_nodes,
+                    num_etypes=self.num_rels,
+                    dropout=self.dropout,
+                    use_norm=self.layer_norm,  # , low_mem=low_mem,
+                )
+            )
         else:
             # i2h
-            self.layers.append(GraphTransformer(
-                self.in_dim, self.hid_dim, self.num_heads,
-                num_ntypes = self.num_nodes,
-                num_etypes = self.num_rels,
-                dropout=self.dropout,
-                use_norm=self.layer_norm#, low_mem=low_mem,
-            ))
+            self.layers.append(
+                GraphTransformer(
+                    self.in_dim,
+                    self.hid_dim,
+                    self.num_heads,
+                    num_ntypes=self.num_nodes,
+                    num_etypes=self.num_rels,
+                    dropout=self.dropout,
+                    use_norm=self.layer_norm,  # , low_mem=low_mem,
+                )
+            )
             # h2h
             for i in range(1, self.n_layers):
-                self.layers.append(GraphTransformer(
-                    self.hid_dim, self.hid_dim, self.num_heads,
-                    num_ntypes = self.num_nodes,
-                    num_etypes = self.num_rels,
-                    dropout=self.dropout,
-                    use_norm=self.layer_norm#, low_mem=low_mem,
-                ))
+                self.layers.append(
+                    GraphTransformer(
+                        self.hid_dim,
+                        self.hid_dim,
+                        self.num_heads,
+                        num_ntypes=self.num_nodes,
+                        num_etypes=self.num_rels,
+                        dropout=self.dropout,
+                        use_norm=self.layer_norm,  # , low_mem=low_mem,
+                    )
+                )
         assert self.n_layers == len(self.layers), (self.n_layers, len(self.layers))
 
     def forward(self, G, emb, ntypes, etypes, norm=None, use_norm=True):
-        """Forward computation.
-        """
+        """Forward computation."""
         for layer in self.layers:
             emb = layer(G, emb, ntypes, etypes, norm=norm)
         output_emb = self.feed_forward(emb)
-        return output_emb 
-
-
-
+        return output_emb
 
 
 class GraphTransformer(nn.Module):
@@ -147,6 +157,7 @@ class GraphTransformer(nn.Module):
 
     Examples
     --------
+
     """
 
     def __init__(
@@ -163,7 +174,7 @@ class GraphTransformer(nn.Module):
         self.in_size = in_size
         self.hid_size = hid_size
         self.num_heads = num_heads
-        head_size = self.hid_size//self.num_heads
+        head_size = self.hid_size // self.num_heads
         self.head_size = head_size
         self.sqrt_d = math.sqrt(self.head_size)
         self.use_norm = use_norm
@@ -182,25 +193,17 @@ class GraphTransformer(nn.Module):
             [nn.Parameter(torch.ones(num_etypes)) for i in range(num_heads)]
         )
         self.relation_att = nn.ModuleList(
-            [
-                TypedLinear(head_size, head_size, num_etypes)
-                for i in range(num_heads)
-            ]
+            [TypedLinear(head_size, head_size, num_etypes) for i in range(num_heads)]
         )
         self.relation_msg = nn.ModuleList(
-            [
-                TypedLinear(head_size, head_size, num_etypes)
-                for i in range(num_heads)
-            ]
+            [TypedLinear(head_size, head_size, num_etypes) for i in range(num_heads)]
         )
         self.skip = nn.Parameter(torch.ones(num_ntypes))
         self.drop = nn.Dropout(dropout)
         if use_norm:
             self.norm = nn.LayerNorm(head_size * num_heads)
         if in_size != head_size * num_heads:
-            self.residual_w = nn.Parameter(
-                torch.Tensor(in_size, head_size * num_heads)
-            )
+            self.residual_w = nn.Parameter(torch.Tensor(in_size, head_size * num_heads))
             nn.init.xavier_uniform_(self.residual_w)
 
     def forward(self, g, x, ntype, etype, norm=None, *, presorted=False):
@@ -228,6 +231,7 @@ class GraphTransformer(nn.Module):
         -------
         torch.Tensor
             New node features. Shape: :math:`(|V|, D_{head} * N_{head})`.
+
         """
         self.presorted = presorted
         if g.is_block:
@@ -255,13 +259,11 @@ class GraphTransformer(nn.Module):
             g.srcdata["v"] = v
             g.edata["etype"] = etype
             g.apply_edges(self.message)
-            g.edata["m"] = g.edata["m"] * edge_softmax(
-                g, g.edata["a"]
-            ).unsqueeze(-1)
+            g.edata["m"] = g.edata["m"] * edge_softmax(g, g.edata["a"]).unsqueeze(-1)
 
             # appen norm
             if norm is not None:
-                g.edata['norm'] = norm
+                g.edata["norm"] = norm
 
             g.update_all(fn.copy_e("m", "m"), fn.sum("m", "h"))
             h = g.dstdata["h"].view(-1, self.num_heads * self.head_size)
@@ -278,7 +280,6 @@ class GraphTransformer(nn.Module):
                 h = self.norm(h)
 
             return h
-
 
     def message(self, edges):
         """Message function."""
@@ -297,10 +298,8 @@ class GraphTransformer(nn.Module):
             m_head = self.relation_msg[i](v[i], etype, self.presorted)
 
             ## * message-passing edge normalization
-            if 'norm' in edges.data:
-                m_head = m_head * edges.data['norm']
+            if "norm" in edges.data:
+                m_head = m_head * edges.data["norm"]
             # (E, O)
-            m.append(
-                m_head
-            )  
+            m.append(m_head)
         return {"a": torch.stack(a, dim=1), "m": torch.stack(m, dim=1)}

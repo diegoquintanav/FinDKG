@@ -39,6 +39,7 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"
+ruff = "^0.9.10"
 
 [[tool.poetry.source]]
 name = "pytorch-gpu-src"

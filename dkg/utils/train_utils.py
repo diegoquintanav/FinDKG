@@ -8,15 +8,17 @@ from dkg.utils.log_utils import logger
 
 
 class EarlyStopping:
-    def __init__(self,
-                 network,
-                 patience=30,
-                 result_root=settings.RESULT_ROOT,
-                 run_best_checkpoint_prefix="run_best_checkpoint",
-                 overall_best_checkpoint_prefix="overall_best_checkpoint",
-                 eval="edge",
-                 minimizing_objective=False,
-                 logging=True):
+    def __init__(
+        self,
+        network,
+        patience=30,
+        result_root=settings.RESULT_ROOT,
+        run_best_checkpoint_prefix="run_best_checkpoint",
+        overall_best_checkpoint_prefix="overall_best_checkpoint",
+        eval="edge",
+        minimizing_objective=False,
+        logging=True,
+    ):
         self.network = network
         self.patience = patience
         self.run_best_checkpoint_prefix = run_best_checkpoint_prefix
@@ -34,48 +36,64 @@ class EarlyStopping:
     def run_best_checkpoint_fpath(self, eval=None):
         if eval is None:
             eval = self.eval
-        return os.path.join(self.result_root, f"{self.run_best_checkpoint_prefix}_opt_{eval}.pt")
+        return os.path.join(
+            self.result_root, f"{self.run_best_checkpoint_prefix}_opt_{eval}.pt"
+        )
 
     def overall_best_checkpoint_fpath(self, eval=None):
         if eval is None:
             eval = self.eval
-        return os.path.join(self.result_root, f"{self.overall_best_checkpoint_prefix}_opt_{eval}.pt")
+        return os.path.join(
+            self.result_root, f"{self.overall_best_checkpoint_prefix}_opt_{eval}.pt"
+        )
 
     def load_overall_best_score(self):
         try:
-            overall_best_score = self.load_checkpoint(self.overall_best_checkpoint_fpath())['score']
+            overall_best_score = self.load_checkpoint(
+                self.overall_best_checkpoint_fpath()
+            )["score"]
         except Exception:
             overall_best_score = None
         if self.logging:
             logger.info("=" * 100)
-            logger.info(f"Overall best score ({self.overall_best_checkpoint_fpath()}) = {overall_best_score}")
+            logger.info(
+                f"Overall best score ({self.overall_best_checkpoint_fpath()}) = {overall_best_score}"
+            )
             logger.info("=" * 100)
         return overall_best_score
 
     def step(self, score, model_state=None):
-        """Return whether to early stop"""
+        """Return whether to early stop."""
 
         if self.run_best_score is None or self.improved(score, self.run_best_score):
             self.run_best_score = score
             if self.logging:
-                logger.info(f"[EarlyStopping] Best validation score updated to {self.run_best_score:.4f}")
+                logger.info(
+                    f"[EarlyStopping] Best validation score updated to {self.run_best_score:.4f}"
+                )
             if model_state is not None:
-                model_state['score'] = self.run_best_score
+                model_state["score"] = self.run_best_score
                 self.save_checkpoint(model_state, self.run_best_checkpoint_fpath)
             self.counter = 0
         else:
             self.counter += 1
             if self.logging:
-                logger.info(f"[EarlyStopping] counter: {self.counter} out of {self.patience}")
+                logger.info(
+                    f"[EarlyStopping] counter: {self.counter} out of {self.patience}"
+                )
             if self.counter >= self.patience:
                 self.early_stop = True
 
-        if self.overall_best_score is None or self.improved(score, self.overall_best_score):
+        if self.overall_best_score is None or self.improved(
+            score, self.overall_best_score
+        ):
             self.overall_best_score = score
             if self.logging:
-                logger.info(f"Overall best validation score updated to {self.overall_best_score:.4f}")
+                logger.info(
+                    f"Overall best validation score updated to {self.overall_best_score:.4f}"
+                )
             if model_state is not None:
-                model_state['score'] = self.overall_best_score
+                model_state["score"] = self.overall_best_score
                 self.save_checkpoint(model_state, self.overall_best_checkpoint_fpath())
 
         return self.early_stop
@@ -94,14 +112,14 @@ class EarlyStopping:
 
         torch.save(model_state, checkpoint_fpath)
 
-    def load_checkpoint(self, checkpoint_fpath=None):
+    def load_checkpoint(self, checkpoint_fpath=None) -> dict:
         if checkpoint_fpath is None:
             checkpoint_fpath = self.run_best_checkpoint_fpath
         return torch.load(checkpoint_fpath)
 
 
 def nullable_string(val):
-    if not val or val.lower() in ['none', 'null']:
+    if not val or val.lower() in ["none", "null"]:
         return None
     return val
 
@@ -110,7 +128,12 @@ def activation_string(val):
     val = nullable_string(val)
     if val is None:
         return val
-    activation_dict = {'relu': nn.ReLU(), 'elu': nn.ELU(), 'sigmoid': nn.Sigmoid(), 'tanh': nn.Tanh()}
+    activation_dict = {
+        "relu": nn.ReLU(),
+        "elu": nn.ELU(),
+        "sigmoid": nn.Sigmoid(),
+        "tanh": nn.Tanh(),
+    }
     return activation_dict[val]
 
 
@@ -123,5 +146,5 @@ def setup_cuda(args):
 
 
 def clamp_preserve_gradients(x: torch.Tensor, min: float, max: float) -> torch.Tensor:
-    """clamp the tensor while preserving gradients in the clamped region."""
+    """Clamp the tensor while preserving gradients in the clamped region."""
     return x + (x.clamp(min, max) - x).detach()
