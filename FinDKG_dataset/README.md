@@ -3,17 +3,13 @@
 
 FinDKG is an open-source dataset focused on creating a temporally-resolved Financial Dynamic Knowledge Graph. Designed to bridge the gap in industry-specific knowledge graphs, particularly in the financial sector, FinDKG provides a high-touch, temporally-aware representation of global economic and market dynamics. This repository includes comprehensive details about the dataset, methodology, and schema, aiming to facilitate academic research and actionable insights in global financial markets.
 
-## Background 
+## Background
 
 While general-purpose knowledge graphs are abundant, industry-specific ones are comparatively rare, especially in the financial sector. FinDKG aims to fill this void by offering a resource for researchers and professionals looking to leverage knowledge graph technology in finance.
 
-
-
 ## FinDKG Dataset
 
-The dataset's foundation lies in an extensive news corpus curated to capture both qualitative and quantitative indicators in the financial landscape. We utilized the [Wayback Machine](https://web.archive.org/) to amass a dataset comprising global financial news. 
-
-
+The dataset's foundation lies in an extensive news corpus curated to capture both qualitative and quantitative indicators in the financial landscape. We utilized the [Wayback Machine](https://web.archive.org/) to amass a dataset comprising global financial news.
 
 ## Dataset Structure
 
@@ -26,18 +22,15 @@ The dataset's foundation lies in an extensive news corpus curated to capture bot
 
 **/FinDKG** is the default study dataset folder including the graph dataset and the corresponding data splits. The graph dataset is organized in the following structure:
 
-* 'train.txt', 'valid.txt', and 'test.txt': The first four columns correspond to subject, relation, object, and time. The fifth column is ignored.
+- 'train.txt', 'valid.txt', and 'test.txt': The first four columns correspond to subject, relation, object, and time. The fifth column is ignored.
 
-* 'stat.txt': The first two columns correspond to the number of entities and relations, respectively.
+- 'stat.txt': The first two columns correspond to the number of entities and relations, respectively.
 
 Test set is held-out for evaluating the model performance. This should match the results of the original paper regarding the Temporal Link Prediction evaluation.
 
 **/FinDKG-full**: The full dataset including a larger size of the event triplets. This graph dataset adopts the same format as `/FinDKG` while is left for future extended research.
 
-* 'time2id.txt': This time mapping table further provided the mapping from time ID to realistic date for real-world application.
-
-
-
+- 'time2id.txt': This time mapping table further provided the mapping from time ID to realistic date for real-world application.
 
 ## Usage
 
