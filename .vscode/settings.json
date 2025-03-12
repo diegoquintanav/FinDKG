@@ -4,5 +4,10 @@
 		"activityBar.background": "#01342E",
 		"titleBar.activeBackground": "#024940",
 		"titleBar.activeForeground": "#E9FFFC"
-	}
+	},
+	// use ruff for formatting and linting python files
+	"[python]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "charliermarsh.ruff"
+	},
 }
