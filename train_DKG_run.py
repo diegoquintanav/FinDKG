@@ -22,16 +22,6 @@ from collections import defaultdict
 from datetime import datetime
 
 
-### Import the DKG library
-# Get the absolute path of the current script
-current_path = os.path.abspath(__file__)
-print("Current path:", current_path)
-# Move up two levels
-parent_parent_path = os.path.dirname(os.path.dirname(current_path))
-print("Two levels up:", parent_parent_path)
-sys.path.append(parent_parent_path)
-
-
 #################### DKG Library ####################
 import torch
 from torch.utils.data import DataLoader
