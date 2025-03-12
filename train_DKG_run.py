@@ -121,16 +121,20 @@ def parse_args():
     parser.add_argument(
         "--data-root-path", type=str, default="./FinDKG_dataset", help="Data root path"
     )
-    parser.add_argument("--flag-train", action="store_true", help="Train the model")
-    parser.add_argument("--flag-eval", action="store_true", help="Evaluate the model")
+    parser.add_argument(
+        "--train", action="store_true", help="Train the model", dest="flag_train"
+    )
+    parser.add_argument(
+        "--eval", action="store_true", help="Evaluate the model", dest="flag_eval"
+    )
 
     return parser.parse_args()
 
 
 def cli(args: argparse.Namespace):
-    graph_mode = args.graph_mode
-    model_ver = args.model_ver
-    model_type = args.model_type
+    graph_mode = args.dataset.value
+    model_ver = args.model_version.value
+    model_type = args.model_type.value
     epoch_times = args.epoch_times
     random_seed = args.random_seed
     data_root_path = args.data_root_path
@@ -529,13 +533,16 @@ def cli(args: argparse.Namespace):
             val_static_entity_emb,
             init_dynamic_entity_embeds,
             val_dynamic_entity_emb,
-            init_dynamic_relation_embeds,
+            _init_dynamic_relation_embeds,
             val_dynamic_relation_emb,
             node_latest_event_time_post_valid,
             loss_weights,
             _,
         ) = unpack_checkpoint(
-            run_best_checkpoint, model, edge_optimizer, time_optimizer
+            run_best_checkpoint,
+            model,
+            edge_optimizer,
+            time_optimizer,
         )
 
         logger.info("Loaded the best model so far for testing.")
