@@ -67,7 +67,7 @@ class KGTransformerModelType(str, Enum):
 
 
 class EnumAction(argparse.Action):
-    """Adds Enum support to argparse
+    """Adds Enum support to argparse.
 
     See https://dnmtechs.com/enhancing-argparse-with-support-for-enum-arguments-in-python-3/
     """
@@ -387,7 +387,7 @@ def cli(args: argparse.Namespace):
             batch_train_loss = 0
             batches_train_loss_dict = defaultdict(list)
 
-            for batch_i, (prior_G, batch_G, cumul_G, batch_times) in enumerate(
+            for batch_i, (prior_G, batch_G, cumul_G, _batch_times) in enumerate(
                 train_tqdm
             ):
                 train_tqdm.set_description(
@@ -435,7 +435,7 @@ def cli(args: argparse.Namespace):
 
                     tqdm.write(
                         f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')} [Epoch {epoch:03d}-Batch {batch_i:03d}] "
-                        f"batch train loss total={sum([sum(l) for l in batches_train_loss_dict.values()]):.4f} | "
+                        f"batch train loss total={sum([sum(loss) for loss in batches_train_loss_dict.values()]):.4f} | "
                         f"{', '.join([f'{loss_term}={sum(loss_cumul):.4f}' for loss_term, loss_cumul in batches_train_loss_dict.items()])}"
                     )
                     batches_train_loss_dict = defaultdict(list)
@@ -458,7 +458,7 @@ def cli(args: argparse.Namespace):
 
             epoch_end_time = time.time()
             logger.info(
-                f"[Epoch-{epoch}] Train loss total={sum([sum(l) for l in epoch_train_loss_dict.values()]):.4f} | "
+                f"[Epoch-{epoch}] Train loss total={sum([sum(loss) for loss in epoch_train_loss_dict.values()]):.4f} | "
                 f"{', '.join([f'{loss_term}={sum(loss_cumul):.4f}' for loss_term, loss_cumul in epoch_train_loss_dict.items()])} | "
                 f"elapsed time={epoch_end_time - epoch_start_time:.4f} secs"
             )
